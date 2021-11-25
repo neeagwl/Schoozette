@@ -1,0 +1,41 @@
+{
+  "name": "vpro",
+  "version": "1.0.0",
+  "description": "\"# VPro\"",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server/app",
+    "server": "nodemon server/app",
+    "client": "npm start --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neeagwl/VPro.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/neeagwl/VPro/issues"
+  },
+  "homepage": "https://github.com/neeagwl/VPro#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "config": "^3.3.6",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "express-async-handler": "^1.2.0",
+    "express-validator": "^6.13.0",
+    "gravatar": "^1.8.2",
+    "jsonwebtoken": "^8.5.1",
+    "moment": "^2.29.1",
+    "mongoose": "^6.0.13",
+    "morgan": "^1.10.0",
+    "node-code-generator": "^1.0.3",
+    "randomstring": "^1.2.1",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "concurrently": "^6.4.0"
+  }
+}
