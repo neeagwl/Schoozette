@@ -37,7 +37,7 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new Error('Invalid User Data')
     }
 
-  }) 
+  })
 
 // AUTHENTICATE USER
 const authUser = asyncHandler(async (req, res) => {
@@ -56,7 +56,8 @@ const authUser = asyncHandler(async (req, res) => {
       })
       
     } else {
-      res.status(401)
+      res.status(422)
+      // return res.status(422).json({error:"Invalid email or password"});
       throw new Error('Invalid email or password')
     }
   })

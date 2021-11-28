@@ -7,7 +7,7 @@ const User = require('../models/User');
 
 // CREATE A NEW CLASS
 const createClass = asyncHandler(async (req, res) => {
-    const { className } = req.body
+    const { className,classDescription } = req.body
   
     const existClass = await Class.findOne({ className })
   
@@ -22,6 +22,7 @@ const createClass = asyncHandler(async (req, res) => {
 
     const newClass = await Class.create({
         className,
+        classDescription,
         classCode: randCode,
         classTeacher: req.user._id
     })
@@ -31,8 +32,6 @@ const createClass = asyncHandler(async (req, res) => {
         const foundUser = await User.findById(req.user._id);
         await foundUser.createdClass.push(newClass._id);
         foundUser.save();
-
-        console.log(newClass); //testing
 
         res.status(201).json({
                  _id: newClass._id,
@@ -53,31 +52,38 @@ const createClass = asyncHandler(async (req, res) => {
  //JOIN A CLASS
  const joinClass = asyncHandler(async (req, res) => {
      
-    const { classCode } = req.body
-    
-    const foundClass = await Class.findOne({'classCode': classCode});
+        const { classCode } = req.body
+        
+        const foundClass = await Class.findOne({'classCode': classCode})
+
+        if(!foundClass){
+            res.status(404)
+            throw new Error('Class not found')
+        }
 
         if(String(foundClass.classTeacher)===String(req.user._id)){
-            res.status(400);
+            res.status(400)
             throw new Error('You are the Teacher of this class. Cannot Join')
         }
 
         if(foundClass.enrolledStudents.includes(req.user._id)){
-            res.status(400);
+            res.status(400)
             throw new Error('You are already enrolled in this class');
         }
 
         await foundClass.enrolledStudents.push(req.user._id);
         await foundClass.save();
 
-        const foundUser = await User.findById(req.user._id);
-        await foundUser.enrolledClass.push({classId: foundClass._id});
-        await foundUser.save();
+        
+        User.findById(req.user._id).then(async(user)=>{
+                await user.enrolledClass.push({classId:foundClass._id})
+                await user.save()
+        })
 
         // testing
-        Class.findById(foundClass._id).then(({enrolledStudents})=>
-            console.log(enrolledStudents)
-        )
+        // Class.findById(foundClass._id).then(({enrolledStudents})=>
+        //     console.log(enrolledStudents)
+        // )
         
 
         res.status(201).json({
@@ -91,10 +97,16 @@ const createClass = asyncHandler(async (req, res) => {
 //GET A CLASS BY ID
 const getClassById = asyncHandler(async (req, res)=>{
 
+        
         const foundClass = await Class.findById(req.params.id);
         if(!foundClass){
             res.status(404);
             throw new Error('Class not found.')
+        }
+
+        if((String(foundClass.classTeacher)!=String(req.user._id)) && !(foundClass.enrolledStudents.includes(req.user._id))){
+            res.status(400)
+            throw new Error('You are not enrolled in this class')
         }
 
         res.status(200).json(foundClass);
@@ -104,49 +116,139 @@ const getClassById = asyncHandler(async (req, res)=>{
 //GET ALL CLASS OF A USER
 const getAllClassOfUser = asyncHandler(async(req, res)=>{
 
-        const classes = await User.findById(req.params.id).populate('createdClass')
+        const {createdClass} = await User.findById(req.params.id).populate('createdClass')
 
-        const classes2 = await User.findById(req.params.id).populate('enrolledClass.classId')
+        const {enrolledClass} = await User.findById(req.params.id).populate('enrolledClass.classId')
+
+        let createdClassArray =[]
+        let enrolledClassArray = []
+
+        createdClass.forEach(async ({_id, className, enrolledStudents})=>{
+
+            createdClassArray.push({_id, className, numberOfEnrolledStudents: enrolledStudents.length})
+
+        })
+
+        enrolledClass.forEach(async ({classId:{_id, className}, totalScore})=>{
+
+            enrolledClassArray.push({_id,className, totalScore})
+
+        })
+
+        
 
         res.status(200).json({
-            createdClass: classes.createdClass,
-            enrolledClass: classes2.enrolledClass
+            createdClassArray,
+            enrolledClassArray
         })
 
 })
 
-//GET ALL CREATED CLASSES
-// const getAllCreatedClass = asyncHandler(async (req, res) => {
-     
-//         User.findById(req.params.id)
-//         .populate('createdClass').exec((err, classes)=>{
-//                 res.status(200).json({
-//                     _id: req.user._id,
-//                     createdClass : classes.createdClass
-//                 })
-//         })
+//ADD A TOPIC TO THE CLASS
+const addTopic = asyncHandler(async(req, res) =>{
 
-// })
 
-//GET ALL ENROLLED CLASSES
-// const getAllEnrolledClass = asyncHandler(async (req, res) => {
-     
-//     User.findById(req.params.id)
-//     .populate('enrolledClass.classId').exec((err, classes)=>{
+    const {topicName, topicTheory} = req.body
+    const foundClass = await Class.findById(req.params.id)
 
-//             res.status(200).json({
-//                 _id: req.user._id,
-//                 enrolledClass : classes.enrolledClass
-//             })
-//     })
+  
 
-// })
+    if(!foundClass){
+        res.status(404)
+        throw new Error('CLass is not found')
+    }
+
+    if(String(req.user._id)!=String(foundClass.classTeacher)){
+        res.status(400)
+        throw new Error('You are not the class Taecher of this class')
+
+    }
+
+    await foundClass.topics.push({topicName, topicTheory})
+    await foundClass.save()
+
+    res.status(200).json({
+        message: "Successfully added a new topic to the class"
+    })
+
+
+})
+
+const getClassLeaderboard = asyncHandler(async (req, res) => {
+
+    const foundClass = await Class.findById(req.params.id);
+    if(!foundClass){
+        res.status(404);
+        throw new Error('Class not found.')
+    }
+
+
+    const enrolledClass= await foundClass.populate('enrolledStudents');
+    
+
+
+    const enrolledStudents = enrolledClass.enrolledStudents;
+   
+    
+    let students = [];
+
+    const sendData= () => {
+        students.sort((a,b) => {
+            return a.totalScore - b.totalScore;
+        })
+        
+        console.log("students");
+        console.log(students);
+        res.status(200).json(students);
+    }
+
+    let counter =0;
+
+    await enrolledStudents.forEach(async ({_id})=>{
+
+        
+        User.find( { _id }, {}
+        ,{ enrolledClass :
+            { $elemMatch : 
+                { classId : req.params.id
+                }
+            }
+        })
+        .exec((err ,user) => {
+            
+            if(err)
+            {
+                console.log(err);
+                res.status(400);
+                throw new Error("Error in fetching database");
+            }
+            var obj = {
+                name: user[0].name,
+                score: user[0].enrolledClass[0].totalScore
+            };
+
+            students.push(obj);
+            console.log("students",students);
+
+            counter++;
+            if(counter===enrolledStudents.length){
+                res.status(200).json(students)
+            }
+            
+        })
+
+
+    })
+
+
+})
+
 
 module.exports={
     createClass,
     joinClass,
     getClassById,
-    getAllClassOfUser
-    // getAllCreatedClass,
-    // getAllEnrolledClass
+    getClassLeaderboard,
+    getAllClassOfUser,
+    addTopic
 }

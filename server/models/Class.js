@@ -10,6 +10,9 @@ const classSchema = mongoose.Schema(
            type: String,
            required: true
        },
+       classDescription:{
+            type: String
+       },
        classTeacher: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User"
@@ -20,6 +23,17 @@ const classSchema = mongoose.Schema(
                ref : "User"
 
            } ],
+        
+        topics:[{
+            topicName: {
+                type: String,
+                required: true
+            },
+            topicTheory :{
+                type: String,
+                required: true
+            }
+        }],
            
         quizzes :[
             {

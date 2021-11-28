@@ -23,8 +23,6 @@ const LoginScreen = ({location,history}) => {
         }
     }, [history,userInfo,redirect])
 
-    console.log(userInfo);  //testing
-
     const submitHandler =(e)=>{
             e.preventDefault();
             dispatch(login(email,password))

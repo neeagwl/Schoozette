@@ -32,30 +32,30 @@ const quizSchema = mongoose.Schema(
         unique: true,
     },
 
-    instructions: {
-        type: String,
-        required: true
-    },
+    // instructions: {
+    //     type: String,
+    //     required: true
+    // },
 
     questions: [questionSchema],
 
-    duration :{
-      hours : {
-        type : Number,
-        default: 0
-      },
+    // duration :{
+    //   hours : {
+    //     type : Number,
+    //     default: 0
+    //   },
 
-      minutes : {
-        type : Number,
-        default: 0
-      },
+    //   minutes : {
+    //     type : Number,
+    //     default: 0
+    //   },
 
-      seconds : {
-        type : Number,
-        default: 0
-      }
+    //   seconds : {
+    //     type : Number,
+    //     default: 0
+    //   }
 
-    },
+    // },
 
     classId: {
         type: mongoose.Schema.Types.ObjectId,

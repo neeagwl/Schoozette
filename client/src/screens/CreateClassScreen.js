@@ -10,6 +10,7 @@ import { createClass } from '../actions/classAction';
 const CreateClassScreen = ({location, history}) => { 
 
     const [className,setClassName] = useState('');
+    const [classDescription,setClassDescription] = useState('');
 
     const userLogin = useSelector(state=>state.userLogin);
     const {loading,error,userInfo} = userLogin;
@@ -28,7 +29,7 @@ const CreateClassScreen = ({location, history}) => {
 
     const submitHandler =(e)=>{
             e.preventDefault();
-            dispatch(createClass(className))
+            dispatch(createClass(className,classDescription))
     }
 
     return (
@@ -53,7 +54,17 @@ const CreateClassScreen = ({location, history}) => {
                                     onChange={e=>setClassName(e.target.value)}
                                 ></Form.Control>
                             </Form.Group>
-                            
+                            <Form.Group controlId='description'>
+                                 <Form.Label>
+                                    Class Description
+                                 </Form.Label>
+                                 <Form.Control
+                                     type="text"
+                                     placeholder="Enter Club Description"
+                                     value={classDescription}
+                                     onChange={e=>setClassDescription(e.target.value)}
+                                 ></Form.Control>
+                            </Form.Group>
                             <Button type="submit" variant="primary">Create Class</Button>
                         </Form>
                     </FormContainer>

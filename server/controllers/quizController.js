@@ -7,7 +7,7 @@ const Quiz = require('../models/Quiz');
 //Create a new Quiz
 const createQuiz = asyncHandler(async (req, res) => {
 
-    const {quiz_name, instructions, questions,duration, classId } = req.body;
+    const {quiz_name, questions, classId } = req.body;
 
     //user should be the class teacher
     const foundClass = await Class.findById(classId);
@@ -20,9 +20,7 @@ const createQuiz = asyncHandler(async (req, res) => {
     
     const newQuiz = await Quiz.create({
         name: quiz_name,
-        instructions,
         questions,
-        duration,
         classId 
     })
 
@@ -50,19 +48,6 @@ const createQuiz = asyncHandler(async (req, res) => {
 
   }) 
 
-
-// GET A QUIZ BY ID
-const getQuizById = asyncHandler(async (req, res) => {
-
-    const quiz = await Quiz.findById(req.params.id) ;
-    if(quiz){
-        res.json(quiz);
-    }else{
-        res.status(404);
-        throw new Error('Quiz not found')
-    }
-
-})
 
 //ALLOW USER TO TAKE QUIZ
 const allowUserForQuiz = asyncHandler(async(req, res)=>{
@@ -144,7 +129,8 @@ const allowUserForQuiz = asyncHandler(async(req, res)=>{
     }
 
     res.status(200).json({
-        quiz,
+        name: quiz.name,
+        questions:quiz.questions,
         message:"You can take this quiz"
     });
 
@@ -155,21 +141,21 @@ const allowUserForQuiz = asyncHandler(async(req, res)=>{
 //EVALUATE & SUBMIT QUIZ
 const evaluateQuiz = asyncHandler(async(req, res) =>{
 
-    const {attemptedQuestions} = req.body;
+    const {attemptedQuestions} = req.body
+    console.log(attemptedQuestions) //testing
 
-    const quiz_id = req.params.id;
+    const quiz_id = req.params.id
  
-    const quiz = await Quiz.findById(req.params.id);
-    const user = await User.findById(req.user._id);
+    const quiz = await Quiz.findById(req.params.id)
+    const user = await User.findById(req.user._id)
 
-    const class_id = quiz.classId;
+    const class_id = quiz.classId
 
     const foundClass = await Class.findById(class_id);
 
     const allQuizInClass = foundClass.quizzes;
     
     const quiz_index = allQuizInClass.findIndex((quizId)=> String(quizId)===String(quiz_id))
-    console.log(quiz_index) //testing
 
     const quizQuestions = quiz.questions; //array of object of questions of quiz
 
@@ -177,7 +163,7 @@ const evaluateQuiz = asyncHandler(async(req, res) =>{
     let score = 0
     //check each question's answer
 	attemptedQuestions.forEach(({question, selectedOption}) => {
-
+        
 		const realQues = quizQuestions.find((x) => x.question === question)
 
         if(realQues){
@@ -192,8 +178,33 @@ const evaluateQuiz = asyncHandler(async(req, res) =>{
 
 	})
 
-    //update attempted Quiz list of the user  --->>THIS NEDDS FIXING, 
-    const myClass = await User.findOne(
+    console.log(score) //testing
+    
+   
+    User.findOneAndUpdate(
+
+        {"_id":req.user._id},
+
+        { "enrolledClass": { 
+            $elemMatch: { 
+                "classId" : class_id
+             }
+        }},
+    ).exec(async(err, user)=>{
+        console.log(user)
+        await user.enrolledClass[0].attemptedQuiz.push({
+                quiz_id,
+                quiz_score: score,
+                quiz_index
+        })
+        await user.save()
+        user.enrolledClass[0].totalScore = user.enrolledClass[0].totalScore +score
+        await user.save()
+        // console.log(user)
+        
+    })
+
+    const enrolledClassAfterSave = await User.findOne(
 
         {"_id":req.user._id},
 
@@ -204,28 +215,17 @@ const evaluateQuiz = asyncHandler(async(req, res) =>{
         }},
     )
 
-    console.log(myClass) //testing
-    const particularClass = await (myClass.enrolledClass).find(x=> String(x.classId)===String(class_id));
-    console.log(particularClass) //testing
-    particularClass.attemptedQuiz.push({
-        quiz_id,
-        quiz_score: score,
-        quiz_index
-    })
-    
-    //update total Score in a class of a user
-    particularClass.totalScore = particularClass.totalScore + score;
-    // particularClass.save();
-    myClass.save();
+    console.log("My Class after save is", enrolledClassAfterSave)
 
-    res.status(200).json({score, myClass});
+
+
+    res.status(200).json({score});
 
 
 })
 
 module.exports={
     createQuiz,
-    getQuizById,
     allowUserForQuiz,
     evaluateQuiz
 }

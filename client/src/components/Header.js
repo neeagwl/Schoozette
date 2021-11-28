@@ -24,15 +24,18 @@ const Header = ({history}) => {
                     <LinkContainer to="/">
                     <Navbar.Brand>VPro</Navbar.Brand>
                     </LinkContainer>
+                    <Nav>
+                        <Nav.Link href='/joinClass' style={{color:'white'}}>JOIN A CLASS</Nav.Link>
+                        <Nav.Link href='/createClass' style={{color:'white'}}>CREATE A CLASS</Nav.Link>
+                        <Nav.Link href='/home' style={{color:'white'}}>DASHBOARD</Nav.Link>
+                    </Nav>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
-                <Nav.Link href='/joinClass' style={{color:'white'}}>JOIN A CLASS</Nav.Link>
-                <Nav.Link href='/createClass' style={{color:'white'}}>CREATE A CLASS</Nav.Link>
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="ml-auto">
                         {userInfo?(
                             <NavDropdown title={userInfo.name} id='username'>
-                                <LinkContainer to="/profile">
-                                    <NavDropdown.Item>Profile</NavDropdown.Item>
+                                <LinkContainer to="/home">
+                                    <NavDropdown.Item>Home Page</NavDropdown.Item>
                                 </LinkContainer>
                                 <LinkContainer to='/createClass'>
                                     <NavDropdown.Item>Create a Class</NavDropdown.Item>
@@ -52,6 +55,7 @@ const Header = ({history}) => {
                         }
                     </Nav>
                 </Navbar.Collapse>
+                
                 </Container>
             </Navbar>
         </header>

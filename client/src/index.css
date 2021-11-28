@@ -13,7 +13,10 @@ h2{
     font-size: 1.4 rem;
     padding: 0.5 rem 0;
 }
-
+header{
+    z-index: 1000;
+    position: relative;
+}
 .rating span{
     margin: 0.1 rem;
 }
