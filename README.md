@@ -2,7 +2,9 @@
 
 Online classes have become part of every student's life now. But still it can't fulfill the void of a Offline Class. One of the main attribute of a Offline class is competitiveness among students. Online classes cannot bring the competitive nature among students. So to tap into this problem, I have built an application which will allow user to create and enroll in new classes. A teacher can add topics and quizzez to his/her class. All the enrolled students can take quiz only in on ordered manner and thus can improve their ranking on class leaderboard.
 
-#### Demo Video ### [Link](https://vimeo.com/manage/videos/650861183 "Link")
+ ### LIVE at ### [Website Link](https://shielded-forest-18939.herokuapp.com/ "Link")
+
+#### Demo Video ### [Video Link](https://vimeo.com/manage/videos/650861183 "Link")
 
 ### FEATURES ###
  1. User Login and User Signup
